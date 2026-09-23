@@ -21,6 +21,29 @@ class _LoginScreenState extends State<LoginScreen> {
   SMITrigger? _trigSuccess;
   SMITrigger? _trigFail;
 
+  //2.1 Crear las variables para FocusNode
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+
+  //2.2 Listeners (Oyentes/Chismosos)
+  @override
+  void initState(){
+    super.initState();
+    _emailFocus.addListener((){
+      if (_emailFocus.hasFocus) {
+        //Verificar que no sea nulo
+        if (_isHandsUp != null) {
+          //Manos abajo en el email
+          _isHandsUp?.change(false);
+        }
+      }
+    });
+    _passwordFocus.addListener(() {
+      //Manos arriba en el password
+      _isHandsUp?.change(_passwordFocus.hasFocus);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     //Para obtener el tamaño de la pantalla
@@ -35,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: size.width,
                 height: 200,
                 child: RiveAnimation.asset(
-                  'login-bear.riv',
+                  'assets/login-bear.riv',
                   stateMachines: ['Login Machine'],
                   //1.2 Vincular animación
                   onInit: (artboard) {
@@ -60,10 +83,11 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 10),
               // Campo de texto para Email
               TextField(
+                focusNode: _emailFocus,
                 onChanged: (value) {
                   if (_isHandsUp != null) {
                     //No tapes los ojos al ver email
-                    _isHandsUp!.change(false);
+                    // _isHandsUp!.change(false);
                   }
                   //Si isChecking es nulo
                   if (_isChecking == null) return;
@@ -83,17 +107,19 @@ class _LoginScreenState extends State<LoginScreen> {
               // Campo de texto para contraseña
               SizedBox(height: 10),
               TextField(
-                obscureText: _obscure,
+                //2.3 Asignar foco al campo de texto
+                focusNode: _passwordFocus,
                 onChanged: (value) {
                   if (_isChecking != null) {
                     //No tapes los ojos al ver email
-                    _isChecking!.change(false);
+                    // _isChecking!.change(false);
                   }
                   //Si isChecking es nulo
                   if (_isHandsUp == null) return;
                   //Activar el modo chismoso
                   _isHandsUp!.change(true);
                 },
+                obscureText: _obscure,
                 // Para mostrar el teclado
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -119,5 +145,11 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
       ),
     );
+  }
+  void dispose() {
+    //2.4 Liberar memoria de los FocusNode
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    super.dispose();
   }
 }
