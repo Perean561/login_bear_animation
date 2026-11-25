@@ -66,8 +66,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool isValidPassword(String pass) {
-    return pass.length >= 6;
-  }
+  final RegExp re = RegExp(
+    r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$',
+  );
+  return re.hasMatch(pass);
+}
 
   // ============================================================
   // DETECTAR EL ESTADO DE REPOSO DE RIVE
@@ -165,25 +168,23 @@ class _LoginScreenState extends State<LoginScreen> {
   // MAPEO DE ERRORES DE FIREBASE AUTH
   // ============================================================
   String _mapFirebaseAuthError(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'user-not-found':
-        return 'No existe una cuenta registrada con este correo.';
-      case 'wrong-password':
-        return 'Contraseña incorrecta.';
-      case 'invalid-credential':
-        return 'Correo o contraseña incorrectos.';
-      case 'invalid-email':
-        return 'El formato del correo no es válido.';
-      case 'user-disabled':
-        return 'Esta cuenta ha sido deshabilitada.';
-      case 'too-many-requests':
-        return 'Demasiados intentos fallidos. Intenta más tarde.';
-      case 'network-request-failed':
-        return 'Sin conexión a internet. Verifica tu red.';
-      default:
-        return 'Error de autenticación: ${e.message ?? e.code}';
-    }
+  switch (e.code) {
+    case 'user-not-found':
+    case 'wrong-password':
+    case 'invalid-credential':
+      return 'Credenciales no válidas';
+    case 'invalid-email':
+      return 'El formato del correo no es válido.';
+    case 'user-disabled':
+      return 'Esta cuenta ha sido deshabilitada.';
+    case 'too-many-requests':
+      return 'Demasiados intentos fallidos. Intenta más tarde.';
+    case 'network-request-failed':
+      return 'Sin conexión a internet. Verifica tu red.';
+    default:
+      return 'Credenciales no válidas (${e.code})';
   }
+}
 
   void _showLoginError(String message) {
     if (!mounted) return;
@@ -209,8 +210,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final String? eError =
         isValidEmail(email) ? null : 'Ingresa un correo válido';
-    final String? pError =
-        isValidPassword(pass) ? null : 'Mínimo 6 caracteres requeridos';
+    final String? pError = isValidPassword(pass)
+    ? null
+    : 'Mín. 8 caracteres, mayúscula, minúscula, número y símbolo';
 
     setState(() {
       emailError = eError;
